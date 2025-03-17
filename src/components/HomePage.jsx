@@ -40,40 +40,44 @@ const HomePage = () => {
         </motion.h3>
 
         <motion.button
-          className={`relative flex items-center justify-center text-lg gap-4 mx-auto w-72 max-w-full border-2 px-6 py-3 rounded-full overflow-hidden transition-all ${
-            isRecording
-              ? "border-red-500 text-red-500"
-              : "border-blue-400 text-blue-400"
-          }`}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsRecording(!isRecording)}
-        >
-          <span> {isRecording ? "Recording" : "Record"} </span>
+  className={`relative flex items-center justify-center text-lg gap-4 mx-auto w-72 max-w-full border-2 px-6 py-3 rounded-full overflow-hidden transition-all ${
+    isRecording ? "border-red-500 text-red-500" : "border-blue-400 text-blue-400"
+  }`}
+  style={{
+    boxShadow: isRecording
+      ? "0px 14px 55px rgba(255, 96, 96, 0.35)"
+      : "0px 14px 55px rgba(96, 165, 255, 0.35)",
+  }}
+  whileTap={{ scale: 0.95 }}
+  onClick={() => setIsRecording(!isRecording)}
+>
+  <span> {isRecording ? "Recording" : "Record"} </span>
 
-          <span className="w-6 text-left">{dots}</span>
+  <span className="w-6 text-left">{dots}</span>
 
-          <motion.div
-            animate={isRecording ? { scale: [1, 1.2, 1] } : {}}
-            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <FaMicrophone
-              className={`text-2xl ${isRecording ? "text-red-500" : ""}`}
-            />
-          </motion.div>
-        </motion.button>
+  <motion.div
+    animate={isRecording ? { scale: [1, 1.2, 1] } : {}}
+    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+  >
+    <FaMicrophone
+      className={`text-2xl ${isRecording ? "text-red-500" : "text-gray-700"}`}
+    />
+  </motion.div>
+</motion.button>
+
 
         <motion.p
-          className="text-blue-500 cursor-pointer hover:text-blue-400 transition duration-200"
+          className="text-black cursor-pointer hover:text-blue-400 transition duration-200"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
           whileHover={{
             textShadow: "0px 0px 5px rgba(0, 150, 255, 0.6)",
-            color: "rgba(0, 150, 255, 1)", // Change hover color to a new shade of blue
+            color: "rgba(0, 150, 255, 1)",
           }}
         >
           Or{" "}
-          <label className="cursor-pointer">
+          <label className="cursor-pointer text-blue-500">
             upload <input className="hidden" type="file" accept=".mp3,.wav" />
           </label>
           an MP3 file
