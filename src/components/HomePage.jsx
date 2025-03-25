@@ -7,7 +7,7 @@ const Clock = ({ isVisible }) => {
 
   useEffect(() => {
     if (!isVisible) return;
-    
+
     const interval = setInterval(() => {
       setTime((prev) => {
         let { hours, minutes, seconds } = prev;
@@ -41,19 +41,55 @@ const Clock = ({ isVisible }) => {
   );
 };
 
-const HomePage = (props) => {
-  const { setAudioStream, setFile } = props;
+const HomePage = ({ setFile, setAudioStream }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [dots, setDots] = useState("");
+  const [recordingStatus, setRecordingStatus] = useState("inactive");
+  const mediaRecorder = useRef(null);
+  const mimeType = "audio/webm";
+
+  async function startRecording() {
+    let tempStream;
+    try {
+      tempStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false,
+      });
+    } catch (err) {
+      console.log(err.message);
+      return;
+    }
+    setRecordingStatus("recording");
+
+    const media = new MediaRecorder(tempStream, { type: mimeType });
+    mediaRecorder.current = media;
+
+    let localAudioChunks = [];
+
+    mediaRecorder.current.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        localAudioChunks.push(event.data);
+      }
+    };
+
+    mediaRecorder.current.start();
+
+    mediaRecorder.current.onstop = () => {
+      const audioBlob = new Blob(localAudioChunks, { type: mimeType });
+      setAudioStream(audioBlob);
+    };
+  }
+
+  async function stopRecording() {
+    if (!mediaRecorder.current) return;
+    setRecordingStatus("inactive");
+    mediaRecorder.current.stop();
+  }
 
   useEffect(() => {
     if (isRecording) {
-      const interval = setInterval(() => {
-        setDots((prev) => (prev === "..." ? "" : prev + "."));
-      }, 500);
-      return () => clearInterval(interval);
-    } else {
-      setDots("");
+      startRecording();
+    } else if (recordingStatus === "recording") {
+      stopRecording();
     }
   }, [isRecording]);
 
@@ -98,17 +134,9 @@ const HomePage = (props) => {
           onClick={() => setIsRecording(!isRecording)}
         >
           <span> {isRecording ? "Recording" : "Record"} </span>
-          <span className="w-6 text-left">{dots}</span>
-          <motion.div
-            animate={isRecording ? { scale: [1, 1.2, 1] } : {}}
-            transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <FaMicrophone
-              className={`text-2xl ${
-                isRecording ? "text-red-500" : "text-gray-700"
-              }`}
-            />
-          </motion.div>
+          <FaMicrophone
+            className={`text-2xl ${isRecording ? "text-red-500" : "text-gray-700"}`}
+          />
         </motion.button>
 
         <motion.p
@@ -121,10 +149,16 @@ const HomePage = (props) => {
             color: "rgba(0, 150, 255, 1)",
           }}
         >
-          Or {" "}
+          Or{" "}
           <label className="cursor-pointer text-blue-500">
-            upload <input className="hidden" type="file" accept=".mp3,.wav" />
-          </label>
+            upload
+            <input
+              className="hidden"
+              type="file"
+              accept=".mp3,.wav"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+          </label>{" "}
           an MP3 file
         </motion.p>
       </main>
