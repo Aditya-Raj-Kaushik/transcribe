@@ -1,78 +1,66 @@
 import { useState, useEffect, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-const HomePage = ({ setAudioStream }) => {
-  const [recordingStatus, setRecordingStatus] = useState("inactive");
-  const [duration, setDuration] = useState(0);
-  const [showTimer, setShowTimer] = useState(false);
-  const mediaRecorder = useRef(null);
-  const mimeType = "audio/webm";
-
-  async function startRecording() {
-    try {
-      const tempStream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: false,
-      });
-
-      setRecordingStatus("recording");
-      setDuration(0);
-      setShowTimer(true);
-
-      const media = new MediaRecorder(tempStream, { mimeType });
-      mediaRecorder.current = media;
-      let localAudioChunks = [];
-
-      mediaRecorder.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          localAudioChunks.push(event.data);
-        }
-      };
-
-      mediaRecorder.current.onstop = () => {
-        const audioBlob = new Blob(localAudioChunks, { type: mimeType });
-        setAudioStream(audioBlob);
-      };
-
-      mediaRecorder.current.start();
-    } catch (err) {
-      console.log(err.message);
-    }
-  }
-
-  function stopRecording() {
-    setRecordingStatus("inactive");
-    if (mediaRecorder.current) {
-      mediaRecorder.current.stop();
-    }
-  }
+const Clock = ({ isVisible }) => {
+  const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    if (recordingStatus === "inactive") return;
+    if (!isVisible) return;
+    
     const interval = setInterval(() => {
-      setDuration((curr) => curr + 1);
+      setTime((prev) => {
+        let { hours, minutes, seconds } = prev;
+        seconds++;
+        if (seconds === 60) {
+          seconds = 0;
+          minutes++;
+        }
+        if (minutes === 60) {
+          minutes = 0;
+          hours++;
+        }
+        return { hours, minutes, seconds };
+      });
     }, 1000);
-    return () => clearInterval(interval);
-  }, [recordingStatus]);
 
+    return () => clearInterval(interval);
+  }, [isVisible]);
+
+  return (
+    <motion.div
+      className="absolute top-10 text-5xl font-bold text-white bg-gray-800 px-6 py-2 rounded-xl shadow-lg"
+      initial={{ opacity: 0, y: -20 }}
+      animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {String(time.hours).padStart(2, "0")} :
+      {String(time.minutes).padStart(2, "0")} :
+      {String(time.seconds).padStart(2, "0")}
+    </motion.div>
+  );
+};
+
+const HomePage = (props) => {
+  const { setAudioStream, setFile } = props;
   const [isRecording, setIsRecording] = useState(false);
+  const [dots, setDots] = useState("");
 
   useEffect(() => {
     if (isRecording) {
-      startRecording();
+      const interval = setInterval(() => {
+        setDots((prev) => (prev === "..." ? "" : prev + "."));
+      }, 500);
+      return () => clearInterval(interval);
     } else {
-      stopRecording();
+      setDots("");
     }
   }, [isRecording]);
 
-  const minutes = Math.floor(duration / 60);
-  const seconds = duration % 60;
-  const formattedTime = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <main className="p-4 flex flex-col gap-6 sm:gap-8 md:gap-10 text-center pb-20 relative">
+    <div className="min-h-screen flex items-center justify-center relative">
+      <Clock isVisible={isRecording} />
+      <main className="p-4 flex flex-col gap-6 sm:gap-8 md:gap-10 text-center pb-20">
         <motion.h1
           className="font-semibold text-5xl sm:text-6xl md:text-7xl"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -92,43 +80,6 @@ const HomePage = ({ setAudioStream }) => {
           <span className="text-blue-400"> →</span> Translate
         </motion.h3>
 
-        {showTimer && (
-          <motion.div
-            className="absolute top-[-4rem] left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-xl text-white font-bold text-3xl flex gap-2"
-            style={{
-              background: "linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.8))",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              backdropFilter: "blur(10px)",
-              boxShadow: "0 8px 20px rgba(0, 150, 255, 0.2)",
-            }}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          >
-            <motion.span
-              key={duration} // Fix: Unique key
-              className="block w-10 text-right"
-              initial={{ rotateX: 90, opacity: 0 }}
-              animate={{ rotateX: 0, opacity: 1 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              {String(minutes).padStart(2, "0")}
-            </motion.span>
-
-            <span>:</span>
-
-            <motion.span
-              key={duration + 1} 
-              className="block w-10 text-left"
-              initial={{ rotateX: 90, opacity: 0 }}
-              animate={{ rotateX: 0, opacity: 1 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              {String(seconds).padStart(2, "0")}
-            </motion.span>
-          </motion.div>
-        )}
-
         <motion.button
           className={`relative flex items-center justify-center text-lg gap-4 mx-auto w-72 max-w-full border-2 px-6 py-3 rounded-full overflow-hidden transition-all ${
             isRecording
@@ -140,17 +91,14 @@ const HomePage = ({ setAudioStream }) => {
               ? "0px 14px 55px rgba(255, 96, 96, 0.35)"
               : "0px 14px 55px rgba(96, 165, 255, 0.35)",
           }}
-          initial={{ opacity: 0, y: 40, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.5 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => {
-            setIsRecording((prev) => !prev);
-            setShowTimer(true);
-          }}
+          onClick={() => setIsRecording(!isRecording)}
         >
-          <span> {isRecording ? "Recording..." : "Record"} </span>
-
+          <span> {isRecording ? "Recording" : "Record"} </span>
+          <span className="w-6 text-left">{dots}</span>
           <motion.div
             animate={isRecording ? { scale: [1, 1.2, 1] } : {}}
             transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
@@ -173,7 +121,7 @@ const HomePage = ({ setAudioStream }) => {
             color: "rgba(0, 150, 255, 1)",
           }}
         >
-          Or{" "}
+          Or {" "}
           <label className="cursor-pointer text-blue-500">
             upload <input className="hidden" type="file" accept=".mp3,.wav" />
           </label>
