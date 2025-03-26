@@ -123,7 +123,7 @@ const HomePage = ({ setFile, setAudioStream }) => {
         </motion.h3>
 
         <motion.button
-          className={`relative flex items-center justify-center text-lg gap-3 mx-auto w-72 max-w-full border-2 px-6 py-3 rounded-full overflow-hidden transition-all ${
+          className={`relative flex items-center justify-center text-lg gap-4 mx-auto w-72 max-w-full border-2 px-6 py-3 rounded-full overflow-hidden transition-all ${
             isRecording
               ? "border-red-500 text-red-500"
               : "border-blue-400 text-blue-400"
@@ -137,13 +137,17 @@ const HomePage = ({ setFile, setAudioStream }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.5 }}
           whileTap={{ scale: 0.95 }}
+          whileHover={isRecording ? {} : { scale: 1.05 }}
+          whileInView={isRecording ? { scale: [1, 1.1, 1] } : {}}
           onClick={() => setIsRecording(!isRecording)}
         >
-          <span className="flex items-center gap-1">
-            {isRecording ? "Recording" : "Record"}
-            <span>{dotAnimation}</span>
-          </span>
-          <FaMicrophone className="text-2xl" />
+          <span>{isRecording ? "Recording" : "Record"}</span>
+          <span>{dotAnimation}</span>
+          <FaMicrophone
+            className={`text-2xl ${
+              isRecording ? "text-red-500 animate-pulse" : "text-gray-700"
+            }`}
+          />
         </motion.button>
 
         <motion.p
@@ -156,7 +160,7 @@ const HomePage = ({ setFile, setAudioStream }) => {
             color: "rgba(0, 150, 255, 1)",
           }}
         >
-          Or{" "}
+          Or {" "}
           <label className="cursor-pointer text-blue-500">
             upload
             <input
