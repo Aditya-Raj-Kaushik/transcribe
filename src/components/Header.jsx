@@ -44,7 +44,7 @@ const Header = () => {
             key={isClicked}
             initial={{ rotate: 0 }}
             animate={{ rotate: 360 }}
-            transition={{ duration: 0.7, ease: 'easeInOut' }}
+            transition={{ duration: 0.8, ease: 'easeInOut' }}
           >
             <FaPlus />
           </motion.div>
