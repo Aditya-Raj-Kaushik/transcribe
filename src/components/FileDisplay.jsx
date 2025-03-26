@@ -2,7 +2,7 @@ import React from 'react';
 
 const FileDisplay = ({ file, audioStream }) => {
   return (
-    <main className="p-4 flex flex-col gap-6 sm:gap-8 md:gap-10 text-center pb-20">
+    <main className="min-h-screen flex flex-col items-center justify-center gap-6 sm:gap-8 md:gap-10 text-center pb-20">
       <h1 className="font-semibold text-4xl sm:text-5xl md:text-6xl">
         Your <span className="text-blue-400 font-bold">File</span>
       </h1>

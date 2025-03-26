@@ -44,8 +44,25 @@ const Clock = ({ isVisible }) => {
 const HomePage = ({ setFile, setAudioStream }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingStatus, setRecordingStatus] = useState("inactive");
+  const [dotAnimation, setDotAnimation] = useState("");
   const mediaRecorder = useRef(null);
   const mimeType = "audio/webm";
+
+  useEffect(() => {
+    if (isRecording) {
+      startRecording();
+      let dots = [".", "..", "..."];
+      let i = 0;
+      const interval = setInterval(() => {
+        setDotAnimation(dots[i]);
+        i = (i + 1) % dots.length;
+      }, 500);
+      return () => clearInterval(interval);
+    } else {
+      stopRecording();
+      setDotAnimation("");
+    }
+  }, [isRecording]);
 
   async function startRecording() {
     let tempStream;
@@ -84,14 +101,6 @@ const HomePage = ({ setFile, setAudioStream }) => {
     setRecordingStatus("inactive");
     mediaRecorder.current.stop();
   }
-
-  useEffect(() => {
-    if (isRecording) {
-      startRecording();
-    } else if (recordingStatus === "recording") {
-      stopRecording();
-    }
-  }, [isRecording]);
 
   return (
     <div className="min-h-screen flex items-center justify-center relative">
@@ -133,34 +142,11 @@ const HomePage = ({ setFile, setAudioStream }) => {
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsRecording(!isRecording)}
         >
-          <span> {isRecording ? "Recording" : "Record"} </span>
+          <span> {isRecording ? `Recording${dotAnimation}` : "Record"} </span>
           <FaMicrophone
             className={`text-2xl ${isRecording ? "text-red-500" : "text-gray-700"}`}
           />
         </motion.button>
-
-        <motion.p
-          className="text-black cursor-pointer hover:text-blue-400 transition duration-200"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.5 }}
-          whileHover={{
-            textShadow: "0px 0px 5px rgba(0, 150, 255, 0.6)",
-            color: "rgba(0, 150, 255, 1)",
-          }}
-        >
-          Or{" "}
-          <label className="cursor-pointer text-blue-500">
-            upload
-            <input
-              className="hidden"
-              type="file"
-              accept=".mp3,.wav"
-              onChange={(e) => setFile(e.target.files[0])}
-            />
-          </label>{" "}
-          an MP3 file
-        </motion.p>
       </main>
     </div>
   );

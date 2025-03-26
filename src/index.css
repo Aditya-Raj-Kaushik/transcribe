@@ -17,3 +17,7 @@ h1, h2, h3, .bold {
 .specialBtn:hover {
   opacity: 0.8;
 }
+
+body, html {
+  overflow: hidden;
+}
