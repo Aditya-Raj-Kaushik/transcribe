@@ -1,13 +1,13 @@
 import React from "react";
 
 const Transcribing = ({ downloading }) => {
-  const delays = ["0s", "-4s", "-2s"]; // animation delays for each bar
+  const delays = ["0s", "-4s", "-2s"]; 
 
   return (
     <div className="flex items-center flex-col justify-center gap-10 md:gap-14 pb-24 p-4 text-center flex-1">
       <div className="flex flex-col gap-2 sm:gap-4 text-center">
         <h1 className="font-semibold text-4xl sm:text-5xl md:text-6xl">
-          <span className="text-blue-400">Transcribing</span>
+          <span className="text-blue-500">Transcribing</span>
         </h1>
         <p className="text-gray-600 text-lg">
           {!downloading ? "Warming up cylinders..." : "Core cylinders engaged!"}

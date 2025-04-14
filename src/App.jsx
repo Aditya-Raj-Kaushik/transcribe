@@ -10,8 +10,8 @@ import { AnimatePresence, motion } from "framer-motion";
 const App = () => {
   const [file, setFile] = useState(null);
   const [audioStream, setAudioStream] = useState(null);
-  const [output, setOutput] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [output, setOutput] = useState(false); // <-- Set to true
+  const [loading, setLoading] = useState(false);
 
   const isAudioAvailable = file || audioStream;
 
@@ -26,9 +26,8 @@ const App = () => {
     console.log("Transcribe clicked");
     setLoading(true);
 
-    // Simulate async transcription
     setTimeout(() => {
-      setOutput("This is a transcribed output.");
+      setOutput(true);
       setLoading(false);
     }, 3000);
   }
@@ -45,7 +44,7 @@ const App = () => {
       {loading ? (
         <Transcribing />
       ) : output ? (
-        <Information output={output} />
+        <Information />
       ) : (
         <AnimatePresence mode="wait">
           {isAudioAvailable ? (

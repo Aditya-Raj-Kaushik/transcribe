@@ -109,7 +109,7 @@ const HomePage = ({ setFile, setAudioStream }) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
-          Voice<span className="text-blue-400 font-bold">Transcribe</span>
+          Voice<span className="text-blue-500 font-bold">Transcribe</span>
         </motion.h1>
 
         <motion.h3

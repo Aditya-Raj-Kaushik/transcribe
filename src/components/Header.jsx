@@ -27,7 +27,7 @@ const Header = () => {
             Voice
           </motion.span>
           <motion.span 
-            className='text-blue-400'
+            className='text-blue-500'
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 1, ease: 'easeOut' }}
@@ -36,7 +36,7 @@ const Header = () => {
           </motion.span>
         </motion.h1>
         <button 
-          className='specialBtn flex items-center gap-2 px-4 py-2 rounded-lg text-blue-400'
+          className='specialBtn flex items-center gap-2 px-4 py-2 rounded-lg text-blue-500'
           onClick={() => setIsClicked(prev => !prev)}
         >
           <p className='font-semibold'>New</p>
@@ -44,7 +44,7 @@ const Header = () => {
             key={isClicked}
             initial={{ rotate: 0 }}
             animate={{ rotate: 360 }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
           >
             <FaPlus />
           </motion.div>
