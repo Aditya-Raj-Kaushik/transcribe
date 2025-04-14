@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import { motion } from "framer-motion";
 
-// PulsingDots Component
+
 const PulsingDots = () => (
   <div className="flex items-center gap-1 w-6 justify-center">
     {[0, 1, 2].map((i) => (
@@ -16,7 +16,7 @@ const PulsingDots = () => (
   </div>
 );
 
-// Timer Component
+
 const Clock = ({ isVisible }) => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
