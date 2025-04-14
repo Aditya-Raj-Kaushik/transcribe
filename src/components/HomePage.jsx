@@ -2,6 +2,21 @@ import { useState, useEffect, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import { motion } from "framer-motion";
 
+// PulsingDots Component
+const PulsingDots = () => (
+  <div className="flex items-center gap-1 w-6 justify-center">
+    {[0, 1, 2].map((i) => (
+      <motion.span
+        key={i}
+        className="w-1.5 h-1.5 bg-red-500 rounded-full"
+        animate={{ scale: [1, 1.4, 1], opacity: [1, 0.5, 1] }}
+        transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.3, ease: "easeInOut" }}
+      />
+    ))}
+  </div>
+);
+
+// Timer Component
 const Clock = ({ isVisible }) => {
   const [time, setTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
@@ -34,8 +49,8 @@ const Clock = ({ isVisible }) => {
       animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {String(time.hours).padStart(2, "0")} :
-      {String(time.minutes).padStart(2, "0")} :
+      {String(time.hours).padStart(2, "0")} {" : "}
+      {String(time.minutes).padStart(2, "0")} {" : "}
       {String(time.seconds).padStart(2, "0")}
     </motion.div>
   );
@@ -43,23 +58,14 @@ const Clock = ({ isVisible }) => {
 
 const HomePage = ({ setFile, setAudioStream }) => {
   const [isRecording, setIsRecording] = useState(false);
-  const [dotAnimation, setDotAnimation] = useState("");
   const mediaRecorder = useRef(null);
   const mimeType = "audio/webm";
 
   useEffect(() => {
     if (isRecording) {
       startRecording();
-      let dots = [".", "..", "..."];
-      let i = 0;
-      const interval = setInterval(() => {
-        setDotAnimation(dots[i]);
-        i = (i + 1) % dots.length;
-      }, 500);
-      return () => clearInterval(interval);
     } else {
       stopRecording();
-      setDotAnimation("");
     }
   }, [isRecording]);
 
@@ -142,10 +148,10 @@ const HomePage = ({ setFile, setAudioStream }) => {
           onClick={() => setIsRecording(!isRecording)}
         >
           <span>{isRecording ? "Recording" : "Record"}</span>
-          <span>{dotAnimation}</span>
+          {isRecording && <PulsingDots />}
           <FaMicrophone
-            className={`text-2xl ${
-              isRecording ? "text-red-500 animate-pulse" : "text-gray-700"
+            className={`text-2xl transition-colors duration-300 ${
+              isRecording ? "text-red-500 animate-pulse-mic" : "text-blue-400"
             }`}
           />
         </motion.button>
@@ -160,7 +166,7 @@ const HomePage = ({ setFile, setAudioStream }) => {
             color: "rgba(0, 150, 255, 1)",
           }}
         >
-          Or {" "}
+          Or{" "}
           <label className="cursor-pointer text-blue-500">
             upload
             <input
@@ -178,3 +184,6 @@ const HomePage = ({ setFile, setAudioStream }) => {
 };
 
 export default HomePage;
+
+
+

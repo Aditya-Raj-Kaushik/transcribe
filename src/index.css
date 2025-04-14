@@ -41,3 +41,17 @@ body, html {
   100% { width: 100%; }
 }
 
+
+@keyframes pulse-mic {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+}
+
+.animate-pulse-mic {
+  animation: pulse-mic 1.5s ease-in-out infinite;
+}
+

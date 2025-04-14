@@ -22,7 +22,7 @@ const Information = () => {
             transition={{
               type: "spring",
               stiffness: 300,
-              damping: 25, // Adding damping to make it smoother
+              damping: 25, 
             }}
             className={`px-6 py-2 font-medium transition-all duration-300 ease-in-out ${
               tab === t
