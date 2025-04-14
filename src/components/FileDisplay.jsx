@@ -8,11 +8,11 @@ const FileDisplay = ({
 }) => {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 sm:gap-8 md:gap-10 text-center pb-20">
-      <h1 className="font-semibold text-4xl sm:text-5xl md:text-6xl">
-        Your <span className="text-blue-500 font-bold">File</span>
+      <h1 className="font-semibold text-4xl sm:text-5xl md:text-6xl ">
+        Your <span className="text-blue-400 font-bold">File</span>
       </h1>
 
-      {file && <p className="text-lg text-gray-700">Uploaded: {file.name}</p>}
+      {file && <p className="text-lg text-gray-200">Uploaded: {file.name}</p>}
 
       {audioStream && (
         <audio controls className="mx-auto w-full max-w-md">
@@ -24,16 +24,16 @@ const FileDisplay = ({
       <div className="flex items-center justify-center gap-6 mt-6 flex-wrap">
         <button
           onClick={handleAudioReset}
-          className="text-gray-500 border border-gray-400 px-5 py-2 rounded-lg transition-all duration-300 ease-in-out hover:text-white hover:border-white hover:bg-transparent"
+          className="text-gray-400 border border-gray-400 px-5 py-2 rounded-lg bg-transparent transition-all duration-300 hover:text-sky-400 hover:border-sky-400"
         >
           Reset
         </button>
 
         <button
           onClick={handleFormSubmission}
-          className="text-white border border-white px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-110"
+          className="text-gray-400 border border-gray-400 px-6 py-3 rounded-lg font-medium bg-transparent transition-all duration-300 hover:text-sky-400 hover:border-sky-400"
         >
-          <span className="inline-block">Transcribe</span>
+          Transcribe
         </button>
       </div>
     </main>

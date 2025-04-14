@@ -4,7 +4,7 @@ import Header from "./components/Header";
 import Transcribing from "./components/Transcribing";
 import Information from "./components/Information";
 import FileDisplay from "./components/FileDisplay";
-import ThreeDBackground from "./components/ThreeDBackground";
+import VisualizerBackground from "./components/VisualizerBackground";
 import { AnimatePresence, motion } from "framer-motion";
 
 const App = () => {
@@ -38,7 +38,7 @@ const App = () => {
 
   return (
     <div className="relative flex flex-col min-h-screen max-w-[1000px] mx-auto w-full">
-      <ThreeDBackground />
+      <VisualizerBackground />
       <Header />
 
       {loading ? (
