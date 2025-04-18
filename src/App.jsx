@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import HomePage from "./components/HomePage";
 import Header from "./components/Header";
 import Transcribing from "./components/Transcribing";
@@ -6,30 +6,90 @@ import Information from "./components/Information";
 import FileDisplay from "./components/FileDisplay";
 import VisualizerBackground from "./components/VisualizerBackground";
 import { AnimatePresence, motion } from "framer-motion";
+import { MessageTypes } from "./utils/presets";
 
 const App = () => {
   const [file, setFile] = useState(null);
   const [audioStream, setAudioStream] = useState(null);
-  const [output, setOutput] = useState(false); // <-- Set to true
+  const [output, setOutput] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const isAudioAvailable = file || audioStream;
+  const worker = useRef(null);
+
+  useEffect(() => {
+    if (!worker.current) {
+      worker.current = new Worker(
+        new URL("./utils/whisper.worker.js", import.meta.url),
+        {
+          type: "module",
+        }
+      );
+    }
+
+    const onMessageReceived = (e) => {
+      switch (e.data.type) {
+        case "DOWNLOADING":
+          setDownloading(true);
+          console.log("DOWNLOADING");
+          break;
+        case "LOADING":
+          setLoading(true);
+          console.log("LOADING");
+          break;
+        case "RESULT":
+          setDownloading(false);
+          setOutput(e.data.results);
+          break;
+        case "INFERENCE_DONE":
+          setFinished(true);
+          console.log("DONE");
+          break;
+        default:
+          break;
+      }
+    };
+
+    const currentWorker = worker.current;
+    currentWorker.addEventListener("message", onMessageReceived);
+
+    return () => {
+      currentWorker.removeEventListener("message", onMessageReceived);
+    };
+  }, []);
+
+  async function readAudioFrom(fileOrBlob) {
+    const samplingRate = 16000;
+    const audioCtx = new AudioContext({ sampleRate: samplingRate });
+    const arrayBuffer = await fileOrBlob.arrayBuffer();
+    const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+    const audio = decoded.getChannelData(0);
+    await audioCtx.close();
+    return audio;
+  }
+
+  async function handleFormSubmission() {
+    if (!file && !audioStream) return;
+
+    const source = file || audioStream;
+    const audio = await readAudioFrom(source);
+
+    const model_name = "openai/whisper-tiny.en";
+
+    worker.current.postMessage({
+      type: MessageTypes.INFERENCE_REQUEST,
+      audio,
+      model_name,
+    });
+  }
 
   function handleAudioReset() {
     setFile(null);
     setAudioStream(null);
     setOutput(null);
     setLoading(false);
-  }
-
-  function handleFormSubmission() {
-    console.log("Transcribe clicked");
-    setLoading(true);
-
-    setTimeout(() => {
-      setOutput(true);
-      setLoading(false);
-    }, 3000);
   }
 
   useEffect(() => {
@@ -82,3 +142,4 @@ const App = () => {
 };
 
 export default App;
+
