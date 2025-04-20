@@ -11,41 +11,57 @@ import { MessageTypes } from "./utils/presets";
 const App = () => {
   const [file, setFile] = useState(null);
   const [audioStream, setAudioStream] = useState(null);
-  const [output, setOutput] = useState(false);
+  const [output, setOutput] = useState(null);
   const [loading, setLoading] = useState(false);
   const [finished, setFinished] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
   const isAudioAvailable = file || audioStream;
+
   const worker = useRef(null);
+
+useEffect(() => {
+  if (!worker.current) {
+    worker.current = new Worker(new URL('./whisper.worker.js', import.meta.url), { type: 'module' });
+  }
+
+  worker.current.addEventListener('message', onMessageReceived);
+  return () => {
+    worker.current.removeEventListener('message', onMessageReceived);
+  };
+}, []);
+
+  
 
   useEffect(() => {
     if (!worker.current) {
       worker.current = new Worker(
         new URL("./utils/whisper.worker.js", import.meta.url),
-        {
-          type: "module",
-        }
+        { type: "module" }
       );
     }
 
     const onMessageReceived = (e) => {
       switch (e.data.type) {
-        case "DOWNLOADING":
+        case MessageTypes.DOWNLOADING:
           setDownloading(true);
           console.log("DOWNLOADING");
           break;
-        case "LOADING":
+        case MessageTypes.LOADING:
           setLoading(true);
           console.log("LOADING");
           break;
-        case "RESULT":
+        case MessageTypes.RESULT:
           setDownloading(false);
-          setOutput(e.data.results);
+          const finalText = e.data.results.map((r) => r.text).join(" ");
+          setOutput(finalText);
           break;
-        case "INFERENCE_DONE":
+        case MessageTypes.INFERENCE_DONE:
           setFinished(true);
           console.log("DONE");
+          break;
+        case MessageTypes.ERROR:
+          console.error("Error:", e.data.message);
           break;
         default:
           break;
@@ -90,11 +106,9 @@ const App = () => {
     setAudioStream(null);
     setOutput(null);
     setLoading(false);
+    setFinished(false);
+    setDownloading(false);
   }
-
-  useEffect(() => {
-    console.log(audioStream);
-  }, [audioStream]);
 
   return (
     <div className="relative flex flex-col min-h-screen max-w-[1000px] mx-auto w-full">
@@ -104,7 +118,7 @@ const App = () => {
       {loading ? (
         <Transcribing />
       ) : output ? (
-        <Information />
+        <Information output={output} />
       ) : (
         <AnimatePresence mode="wait">
           {isAudioAvailable ? (
@@ -142,4 +156,3 @@ const App = () => {
 };
 
 export default App;
-
