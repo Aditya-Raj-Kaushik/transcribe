@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import HomePage from "./components/HomePage";
 import Header from "./components/Header";
 import Transcribing from "./components/Transcribing";
@@ -6,35 +6,109 @@ import Information from "./components/Information";
 import FileDisplay from "./components/FileDisplay";
 import VisualizerBackground from "./components/VisualizerBackground";
 import { AnimatePresence, motion } from "framer-motion";
+import { MessageTypes } from "./utils/presets";
 
 const App = () => {
   const [file, setFile] = useState(null);
   const [audioStream, setAudioStream] = useState(null);
-  const [output, setOutput] = useState(false); // <-- Set to true
+  const [output, setOutput] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const isAudioAvailable = file || audioStream;
+
+  const worker = useRef(null);
+
+useEffect(() => {
+  if (!worker.current) {
+    worker.current = new Worker(new URL('./whisper.worker.js', import.meta.url), { type: 'module' });
+  }
+
+  worker.current.addEventListener('message', onMessageReceived);
+  return () => {
+    worker.current.removeEventListener('message', onMessageReceived);
+  };
+}, []);
+
+  
+
+  useEffect(() => {
+    if (!worker.current) {
+      worker.current = new Worker(
+        new URL("./utils/whisper.worker.js", import.meta.url),
+        { type: "module" }
+      );
+    }
+
+    const onMessageReceived = (e) => {
+      switch (e.data.type) {
+        case MessageTypes.DOWNLOADING:
+          setDownloading(true);
+          console.log("DOWNLOADING");
+          break;
+        case MessageTypes.LOADING:
+          setLoading(true);
+          console.log("LOADING");
+          break;
+        case MessageTypes.RESULT:
+          setDownloading(false);
+          const finalText = e.data.results.map((r) => r.text).join(" ");
+          setOutput(finalText);
+          break;
+        case MessageTypes.INFERENCE_DONE:
+          setFinished(true);
+          console.log("DONE");
+          break;
+        case MessageTypes.ERROR:
+          console.error("Error:", e.data.message);
+          break;
+        default:
+          break;
+      }
+    };
+
+    const currentWorker = worker.current;
+    currentWorker.addEventListener("message", onMessageReceived);
+
+    return () => {
+      currentWorker.removeEventListener("message", onMessageReceived);
+    };
+  }, []);
+
+  async function readAudioFrom(fileOrBlob) {
+    const samplingRate = 16000;
+    const audioCtx = new AudioContext({ sampleRate: samplingRate });
+    const arrayBuffer = await fileOrBlob.arrayBuffer();
+    const decoded = await audioCtx.decodeAudioData(arrayBuffer);
+    const audio = decoded.getChannelData(0);
+    await audioCtx.close();
+    return audio;
+  }
+
+  async function handleFormSubmission() {
+    if (!file && !audioStream) return;
+
+    const source = file || audioStream;
+    const audio = await readAudioFrom(source);
+
+    const model_name = "openai/whisper-tiny.en";
+
+    worker.current.postMessage({
+      type: MessageTypes.INFERENCE_REQUEST,
+      audio,
+      model_name,
+    });
+  }
 
   function handleAudioReset() {
     setFile(null);
     setAudioStream(null);
     setOutput(null);
     setLoading(false);
+    setFinished(false);
+    setDownloading(false);
   }
-
-  function handleFormSubmission() {
-    console.log("Transcribe clicked");
-    setLoading(true);
-
-    setTimeout(() => {
-      setOutput(true);
-      setLoading(false);
-    }, 3000);
-  }
-
-  useEffect(() => {
-    console.log(audioStream);
-  }, [audioStream]);
 
   return (
     <div className="relative flex flex-col min-h-screen max-w-[1000px] mx-auto w-full">
@@ -44,7 +118,7 @@ const App = () => {
       {loading ? (
         <Transcribing />
       ) : output ? (
-        <Information />
+        <Information output={output} />
       ) : (
         <AnimatePresence mode="wait">
           {isAudioAvailable ? (
