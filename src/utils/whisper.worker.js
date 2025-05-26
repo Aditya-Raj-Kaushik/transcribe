@@ -1,7 +1,6 @@
 import { pipeline } from '@xenova/transformers';
 import { MessageTypes } from './presets';
 
-// Optional utility for JSON fetch (not used right now)
 async function getModelJSON(modelPath) {
     try {
         const response = await fetch(modelPath);
